@@ -1,0 +1,416 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+# Carregue a aba específica chamada 'dados_da_campanha'
+caminho_arquivo = r'C:\Case_Startup\dados_pesquisa.xlsx'
+dados = pd.read_excel(caminho_arquivo, sheet_name='dados_da_campanha')
+
+# Exibir as primeiras linhas para inspecionar os dados
+dados.head(10)
+# Criar a coluna 'Price' com as seguintes condições:
+# Se 'interesse_no_Curso' for 0 e 'valor_que_pagaria' for 50, então o valor é 0.
+# Se 'interesse_no_Curso' for 1 e 'valor_que_pagaria' for maior que 50, manter o valor original.
+dados['Price'] = dados.apply(lambda row: 0 if row['interesse_no_Curso'] == 0 and row['valor_que_pagaria'] == 50 
+                             else row['valor_que_pagaria'] if row['interesse_no_Curso'] == 1 and row['valor_que_pagaria'] > 50 
+                             else row['valor_que_pagaria'], axis=1)
+# Exibir as primeiras 7 linhas para checar se a coluna/variável "Price"foi inserida com sucesso!
+# 0 significa  não interessados!
+dados.head(7)
+# Analisei a coluna 'interesse_no_Curso' para contagem e porcentagem de interessados
+contagem_respostas = dados['interesse_no_Curso'].value_counts()
+
+# par exibir  a contagem dos interessados e não interessados
+interessados = contagem_respostas.get(1, 0)
+nao_interessados = contagem_respostas.get(0, 0)
+
+print(f"Número de Interessados: {interessados}")
+print(f"Número de Não Interessados: {nao_interessados}")
+
+# Gráfico de pizza
+plt.figure(figsize=(2, 2))
+plt.pie(contagem_respostas, labels=['Não Interessados', 'Interessados'], autopct='%1.1f%%', startangle=30, colors=['#ff9999', '#66b3ff'])
+plt.title('Interessados (1) x Não Interessados (0)')
+plt.axis('equal')  # Para garantir que o gráfico seja um círculo
+plt.show()
+# Filtrar os valores maiores que 0 na coluna 'Price'
+valores_acima_de_zero = dados[dados['Price'] > 0]['Price']
+
+# Calcular o valor mínimo
+valor_minimo = valores_acima_de_zero.min()
+
+# Calcular o valor máximo
+valor_maximo = valores_acima_de_zero.max()
+
+# Calcular a média
+media = valores_acima_de_zero.mean()
+
+# Calcular a mediana
+mediana = valores_acima_de_zero.median()
+
+# Calcular a variância
+variancia = valores_acima_de_zero.var()
+
+# Contar o total de valores acima de 0
+contagem_valores_acima_de_zero = valores_acima_de_zero.shape[0]
+
+# Exibir os resultados
+print(f"Valor mínimo: {valor_minimo}")
+print(f"Valor máximo: {valor_maximo}")
+print(f"Média: {media}")
+print(f"Mediana: {mediana}")
+print(f"Variância: {variancia}")
+print(f"Pessoas Interessadas: {contagem_valores_acima_de_zero}")
+# Aqui estou usando o Pandas para
+
+# Filtrar os 39 valores acima de 0 na coluna 'Price'
+valores_acima_de_zero = dados[dados['Price'] > 0]['Price'].head(39)
+
+# Definir as faixas de valores: 73-82, 83-92, 93-102, 103-112
+bins = [73, 83, 93, 103, 113]
+labels = ['73-82', '83-92', '93-102', '103-112']
+
+# Categorizar os valores dentro das faixas definidas
+categorias = pd.cut(valores_acima_de_zero, bins=bins, labels=labels, right=False)
+
+# Calcular a frequência absoluta
+frequencia_absoluta = categorias.value_counts().sort_index()
+
+# Calcular a frequência relativa
+frequencia_relativa = frequencia_absoluta / frequencia_absoluta.sum()
+
+# Calcular a frequência acumulada
+frequencia_acumulada = frequencia_absoluta.cumsum()
+
+# Criar um DataFrame para organizar os resultados
+tabela_frequencia = pd.DataFrame({
+    'Frequência Absoluta': frequencia_absoluta,
+    'Frequência Relativa (%)': frequencia_relativa * 100,
+    'Frequência Acumulada': frequencia_acumulada
+})
+
+# Exibir a tabela de frequências
+print(tabela_frequencia)
+# import matplotlib.pyplot as plt
+# import seaborn as sns
+# import numpy as np
+
+# Configurações de estilo
+sns.set(style="whitegrid")
+
+# Histograma para representar a distribuição dos valores nas faixas com números visíveis
+plt.figure(figsize=(10, 5))
+contagem, bins, patches = plt.hist(valores_acima_de_zero, bins=[73, 83, 93, 103, 113], edgecolor='black', color='skyblue', alpha=0.7)
+
+# Adicionar os números dos dados no topo das barras
+for count, patch in zip(contagem, patches):
+    plt.text(patch.get_x() + patch.get_width() / 2, count, int(count), ha='center', va='bottom')
+
+plt.title('Distribuição de Valores - Faixas de Preço')
+plt.xlabel('Faixas de Preço')
+plt.ylabel('Frequência')
+plt.xticks([73, 83, 93, 103, 113])
+
+
+# Box Plot para visualizar a dispersão dos dados e exibir os quartis
+plt.figure(figsize=(8, 6))
+boxplot = sns.boxplot(y=valores_acima_de_zero, color='lightgreen')
+plt.title('Box Plot - Distribuição de Preços')
+plt.ylabel('Valores de Preço')
+
+# Calcular os quartis e outros pontos chave
+q1 = np.percentile(valores_acima_de_zero, 25)
+median = np.median(valores_acima_de_zero)
+q3 = np.percentile(valores_acima_de_zero, 75)
+
+# Adicionar os valores dos quartis no gráfico
+plt.text(0.02, q1, f'Q1: {q1}', ha='left', va='center', color='black', fontsize=10)
+plt.text(0.02, median, f'Mediana: {median}', ha='left', va='center', color='black', fontsize=10)
+plt.text(0.02, q3, f'Q3: {q3}', ha='left', va='center', color='black', fontsize=10)
+
+plt.show()
+# Filtrar dados onde interesse_no_Curso == 1
+dados_interessados = dados[dados['interesse_no_Curso'] == 1]
+
+# Contabilizar os valores na coluna sexo
+contagem_sexo = dados_interessados['sexo'].value_counts()
+
+# Gráfico de pizza para a coluna sexo
+plt.figure(figsize=(2, 2))
+plt.pie(contagem_sexo, labels=contagem_sexo.index, autopct='%1.0f%%', colors=['lightblue', 'lightgreen'])
+plt.title('Distribuição por Sexo')
+plt.show()
+
+# Função para calcular IV
+def calcular_iv(data, feature, target, epsilon=1e-10):
+    # Criar uma tabela de frequência cruzada
+    cross_tab = pd.crosstab(data[feature], data[target], normalize='columns')
+    
+    # Adicionar epsilon para evitar divisão por zero
+    cross_tab[0] = cross_tab[0] + epsilon
+    cross_tab[1] = cross_tab[1] + epsilon
+    
+    # Calcular a WOE
+    cross_tab['WOE'] = np.log(cross_tab[1] / cross_tab[0])
+    
+    # Calcular o IV
+    cross_tab['IV'] = (cross_tab[1] - cross_tab[0]) * cross_tab['WOE']
+    
+    # Somar o IV total
+    iv_total = cross_tab['IV'].sum()
+    
+    return iv_total, cross_tab
+
+# Calcular o IV para a variável 'sexo'
+iv_sexo, iv_details_sexo = calcular_iv(dados, 'sexo', 'interesse_no_Curso')
+
+# Exibir o resultado
+print(f"Information Value (IV) para a variável 'sexo': {iv_sexo:.4f}")
+# Função para calcular IV
+def calcular_iv(data, feature, target, epsilon=1e-10):
+    # Criar uma tabela de frequência cruzada normalizada por coluna
+    cross_tab = pd.crosstab(data[feature], data[target], normalize='columns')
+    
+    # Garantir que todas as faixas etárias estão presentes no cross_tab
+    unique_values = data[feature].unique()
+    for value in unique_values:
+        if value not in cross_tab.index:
+            cross_tab.loc[value] = [0, 0]
+    
+    # Adicionar epsilon para evitar divisão por zero
+    cross_tab[0] = cross_tab[0] + epsilon
+    cross_tab[1] = cross_tab[1] + epsilon
+    
+    # Calcular a WOE
+    cross_tab['WOE'] = np.log(cross_tab[1] / cross_tab[0])
+    
+    # Substituir WOE infinita por zero
+    cross_tab['WOE'].replace([np.inf, -np.inf], 0, inplace=True)
+    
+    # Verificar se existe algum valor zero para a faixa etária e ajustar o IV
+    if (cross_tab[1] == epsilon).all() or (cross_tab[0] == epsilon).all():
+        cross_tab['IV'] = 0
+    else:
+        # Calcular o IV
+        cross_tab['IV'] = (cross_tab[1] - cross_tab[0]) * cross_tab['WOE']
+    
+    # Somar o IV total
+    iv_total = cross_tab['IV'].sum()
+    
+    return iv_total, cross_tab
+
+# Criar a coluna 'interesse_no_Curso' baseada na coluna 'Price'
+dados['interesse_no_Curso'] = dados['Price'].apply(lambda x: 1 if x > 0 else 0)
+
+# Calcular o IV para a variável 'faixa_etária'
+iv_faixa_etaria, iv_details_faixa_etaria = calcular_iv(dados, 'faixa_etária', 'interesse_no_Curso')
+
+# Ajustar manualmente o valor para a faixa etária "40-44 anos"
+iv_details_faixa_etaria.loc['40-44', 'WOE'] = 0
+iv_details_faixa_etaria.loc['40-44', 'IV'] = 0
+
+# Recalcular o IV total com o ajuste manual
+iv_faixa_etaria_corrigido = iv_details_faixa_etaria['IV'].sum()
+
+# Exibir o resultado
+print(f"Information Value (IV) para a variável 'faixa_etária': {iv_faixa_etaria_corrigido:.4f}")
+print(iv_details_faixa_etaria)
+
+# Gráfico de barras para visualizar a distribuição por faixa etária (apenas para os interessados)
+dados_interessados = dados[dados['interesse_no_Curso'] == 1]
+contagem_faixa_etaria = dados['faixa_etária'].value_counts().reindex(dados['faixa_etária'].unique(), fill_value=0)
+
+plt.figure(figsize=(8, 4))
+bars = plt.bar(contagem_faixa_etaria.index, contagem_faixa_etaria.values, color='skyblue')
+
+# Adicionar rótulos de porcentagem acima de cada barra
+for bar in bars:
+    height = bar.get_height()
+    plt.text(bar.get_x() + bar.get_width() / 2.0, height, f'{(height / contagem_faixa_etaria.sum()) * 100:.2f}%', ha='center', va='bottom')
+
+plt.title('Distribuição por Faixa Etária (Interessados)')
+plt.xlabel('Faixa Etária')
+plt.ylabel('Contagem')
+plt.xticks(rotation=45)
+plt.show()
+# Contabilizar os valores na coluna escolaridade
+contagem_escolaridade = dados_interessados['escolaridade'].value_counts()
+
+# Gráfico de histograma para a coluna escolaridade
+plt.figure(figsize=(10, 6))
+ax = sns.barplot(x=contagem_escolaridade.index, y=contagem_escolaridade.values, palette='viridis')
+plt.title('Distribuição por Escolaridade (Interesse = 1)')
+plt.xlabel('Escolaridade')
+plt.ylabel('Contagem')
+plt.xticks(rotation=45)
+
+# Exibir valores acima das barras
+for p in ax.patches:
+    ax.annotate(f'{p.get_height()}', (p.get_x() + p.get_width() / 2., p.get_height()), ha='center', va='center', fontsize=11, color='black', xytext=(0, 5), textcoords='offset points')
+
+plt.show()
+
+# Calcular o IV para a variável 'escolaridade'
+iv_escolaridade, iv_details_escolaridade = calcular_iv(dados, 'escolaridade', 'interesse_no_Curso')
+
+# Exibir o resultado
+print(f"Information Value (IV) para a variável 'escolaridade': {iv_escolaridade:.4f}")
+# Carregue a aba específica chamada 'dados_da_campanha'
+caminho_arquivo = r'C:\Case_Startup\dados_pesquisa.xlsx'
+dados = pd.read_excel(caminho_arquivo, sheet_name='dados_da_campanha')
+
+# Criar a coluna 'Price' com as seguintes condições:
+# Se 'interesse_no_Curso' for 0 e 'valor_que_pagaria' for 50, então o valor é 0.
+# Se 'interesse_no_Curso' for 1 e 'valor_que_pagaria' for maior que 50, manter o valor original.
+dados['Price'] = dados.apply(lambda row: 0 if row['interesse_no_Curso'] == 0 and row['valor_que_pagaria'] == 50 
+                             else row['valor_que_pagaria'] if row['interesse_no_Curso'] == 1 and row['valor_que_pagaria'] > 50 
+                             else row['valor_que_pagaria'], axis=1)
+# precisei chamar a biblioteca scipy.stats para calcuar o intervalo de confiança
+
+import scipy.stats as stats
+
+# Função para calcular o intervalo de confiança e a margem de erro
+def calcular_intervalo_confianca(df, col_interesse, n, confidence_level=0.95):
+    # Filtrar os dados para o grupo de interesse
+    dados_filtrados = df[df[col_interesse] == 1]
+    
+    # Número de pessoas interessadas no curso
+    k = dados_filtrados.shape[0]
+    p_hat = k / n  # proporção de sucesso
+
+    # Nível de confiança
+    alpha = 1 - confidence_level
+    z_critical = stats.norm.ppf(1 - alpha / 2)  # valor crítico z para intervalo de confiança
+
+    # Erro padrão
+    standard_error = np.sqrt(p_hat * (1 - p_hat) / n)
+
+    # Margem de erro
+    margin_of_error = z_critical * standard_error
+
+    # Intervalo de confiança
+    confidence_interval = (p_hat - margin_of_error, p_hat + margin_of_error)
+
+    # Converter proporção para porcentagem com 1 casa decimal
+    p_hat_percent = round(p_hat * 100, 1)
+    confidence_interval_percent = (round(confidence_interval[0] * 100, 1), round(confidence_interval[1] * 100, 1))
+    margin_of_error_percent = round(margin_of_error * 100, 1)
+
+    return p_hat_percent, confidence_interval_percent, margin_of_error_percent
+
+# Número total de pessoas na amostra
+n = 120
+
+# Exemplo de dataframe para teste (substitua pelo seu dataframe)
+import pandas as pd
+dados = pd.DataFrame({'interesse_no_Curso': [1 if i < 39 else 0 for i in range(120)]})
+
+# Calcular intervalo de confiança para as pessoas interessadas no curso
+p_hat_percent, confidence_interval_percent, margin_of_error_percent = calcular_intervalo_confianca(dados, 'interesse_no_Curso', n)
+
+# Exibir resultados
+print(f"Proporção de pessoas interessadas: {p_hat_percent:.1f}%")
+print(f"Intervalo de Confiança a 95%: ({confidence_interval_percent[0]:.1f}%, {confidence_interval_percent[1]:.1f}%)")
+print(f"Margem de erro: {margin_of_error_percent:.1f}%")
+
+# Calcular a amostra ideal para atingir uma margem de erro de 5%
+desired_margin_of_error = 5 / 100  # 5% convertido para proporção
+z_critical = stats.norm.ppf(1 - alpha / 2)  # valor crítico z para intervalo de confiança
+n_ideal = (z_critical**2 * (p_hat_percent/100) * (1 - p_hat_percent/100)) / (desired_margin_of_error**2)
+n_ideal = int(np.ceil(n_ideal))
+
+print(f"Para atingir uma margem de erro de 5%, a amostra ideal é de aproximadamente {n_ideal} respostas.")
+
+# Gráfico da distribuição normal
+x = np.linspace(-4, 4, 100)
+y = stats.norm.pdf(x)
+
+# Plotar
+plt.figure(figsize=(10, 6))
+plt.plot(x, y, 'b-', label='Distribuição Normal')
+
+# Destacar a área do intervalo de confiança
+plt.fill_between(x, y, 0, where=((x >= -z_critical) & (x <= z_critical)), color='orange', alpha=0.3, label='IC 95%')
+
+plt.title('Distribuição Normal com Intervalo de Confiança de 95%')
+plt.xlabel('Valor z')
+plt.ylabel('Densidade de Probabilidade')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Carregue a aba específica chamada 'dados_da_campanha'
+caminho_arquivo = r'C:\Case_Startup\dados_pesquisa.xlsx'
+dados = pd.read_excel(caminho_arquivo, sheet_name='dados_da_campanha')
+
+# Criar a coluna 'Price' com as seguintes condições:
+# Se 'interesse_no_Curso' for 0 e 'valor_que_pagaria' for 50, então o valor é 0.
+# Se 'interesse_no_Curso' for 1 e 'valor_que_pagaria' for maior que 50, manter o valor original.
+dados['Price'] = dados.apply(lambda row: 0 if row['interesse_no_Curso'] == 0 and row['valor_que_pagaria'] == 50 
+                             else row['valor_que_pagaria'] if row['interesse_no_Curso'] == 1 and row['valor_que_pagaria'] > 50 
+                             else row['valor_que_pagaria'], axis=1)
+
+
+# Filtrar a coluna 'Price' onde o valor é maior que 0
+precos_validos = dados[dados['Price'] > 0]['Price']
+
+# Número total de pessoas na amostra
+n = 39
+
+# Calcular a média e o desvio padrão da amostra
+media_amostra = precos_validos.mean()
+desvio_padrao_amostra = precos_validos.std(ddof=1)
+
+# Nível de confiança
+confidence_level = 0.95
+alpha = 1 - confidence_level
+t_critical = stats.t.ppf(1 - alpha / 2, df=n - 1)  # valor crítico t para intervalo de confiança
+
+# Erro padrão
+standard_error = desvio_padrao_amostra / np.sqrt(n)
+
+# Margem de erro
+margin_of_error = t_critical * standard_error
+
+# Intervalo de confiança
+confidence_interval = (media_amostra - margin_of_error, media_amostra + margin_of_error)
+
+# Converter resultados para R$ com duas casas decimais
+media_amostra_reais = round(media_amostra, 2)
+confidence_interval_reais = (round(confidence_interval[0], 2), round(confidence_interval[1], 2))
+margin_of_error_reais = round(margin_of_error, 2)
+
+# Exibir resultados com 39 respostas
+print(f"Média de preço: R$ {media_amostra_reais:.2f}")
+print(f"Intervalo de Confiança a 95% com 39 respostas: (R$ {confidence_interval_reais[0]:.2f}, R$ {confidence_interval_reais[1]:.2f})")
+print(f"Margem de erro com 39 respostas: R$ {margin_of_error_reais:.2f}")
+
+# Determinar a amostra ideal para margem de erro de R$ 2,00
+desired_margin_of_error = 2.00
+n_ideal = (t_critical * desvio_padrao_amostra / desired_margin_of_error) ** 2
+n_ideal = int(np.ceil(n_ideal))
+
+print(f"Para atingir uma margem de erro de R$ 2,00, a amostra ideal é de aproximadamente {n_ideal} respostas.")
+
+# Gráfico da distribuição t-Student com 39 respostas
+df = n - 1  # graus de liberdade para a distribuição t
+
+# Valores para o gráfico
+x = np.linspace(stats.t.ppf(0.01, df), stats.t.ppf(0.99, df), 100)
+y = stats.t.pdf(x, df)
+
+# Plotar
+plt.figure(figsize=(10, 6))
+plt.plot(x, y, 'b-', label='Distribuição t-Student')
+
+# Destacar a área do intervalo de confiança
+plt.fill_between(x, y, 0, where=((x >= stats.t.ppf(0.025, df)) & (x <= stats.t.ppf(0.975, df))), color='orange', alpha=0.3, label='IC 95%')
+
+plt.title('Distribuição t-Student com Intervalo de Confiança de 95%')
+plt.xlabel('Valor t')
+plt.ylabel('Densidade de Probabilidade')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+                             
